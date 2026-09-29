@@ -1,0 +1,29 @@
+# 테스터가 게임 안에서 F8로 보낸 이슈를 reports/ 폴더의 글 파일로 옮긴다.
+name: report-to-file
+on:
+  issues:
+    types: [opened]
+permissions:
+  contents: write
+  issues: write
+jobs:
+  save:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 이슈를 글 파일로
+        env:
+          NUM: ${{ github.event.issue.number }}
+          TITLE: ${{ github.event.issue.title }}
+          BODY: ${{ github.event.issue.body }}
+          WHO: ${{ github.event.issue.user.login }}
+          WHEN: ${{ github.event.issue.created_at }}
+        run: |
+          mkdir -p reports
+          f="reports/$(date -u +%Y-%m-%d)_${NUM}.md"
+          printf '# %s\n\n- 보낸 사람: %s\n- 시각: %s\n- 이슈: #%s\n\n%s\n' "$TITLE" "$WHO" "$WHEN" "$NUM" "$BODY" > "$f"
+          git config user.name "report-bot"
+          git config user.email "report-bot@users.noreply.github.com"
+          git add "$f"
+          git commit -m "report #${NUM}: ${TITLE}"
+          git push
