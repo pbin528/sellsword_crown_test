@@ -92,7 +92,29 @@ body {
 		</style>
 		<link id="-gd-engine-icon" rel="icon" type="image/png" href="index.icon.png" />
 <link rel="apple-touch-icon" href="index.apple-touch-icon.png"/>
-
+<style>
+#rotate-hint{display:none;position:fixed;inset:0;z-index:9999;background:#15110d;color:#e8dcc0;font:20px serif;align-items:center;justify-content:center;text-align:center;flex-direction:column;gap:18px}
+#rotate-hint .ico{font-size:64px;transform:rotate(90deg)}
+@media (orientation:portrait) and (pointer:coarse){#rotate-hint{display:flex}}
+</style>
+<script>
+// 폰: 처음 누를 때 전체 화면 + 가로 잠금을 시도한다. 잠금이 안 되는 폰(아이폰 등)은 세로일 때 안내를 덮는다
+document.addEventListener('DOMContentLoaded',function(){
+ var d=document.createElement('div');d.id='rotate-hint';
+ d.innerHTML='<div class="ico">&#x1F4F1;</div><div>가로로 돌려 주세요</div><div style="font-size:14px;opacity:.7">Sellsword Crown은 가로 화면에서 합니다</div>';
+ document.body.appendChild(d);
+ var tried=false;
+ function lock(){
+  if(tried)return;tried=true;
+  if(!matchMedia('(pointer:coarse)').matches)return;
+  var el=document.documentElement,p=null;
+  try{p=(el.requestFullscreen||el.webkitRequestFullscreen).call(el);}catch(e){}
+  Promise.resolve(p).then(function(){if(screen.orientation&&screen.orientation.lock){return screen.orientation.lock('landscape');}}).catch(function(){});
+ }
+ document.addEventListener('pointerdown',lock,{once:false,capture:true});
+ document.addEventListener('touchend',lock,{once:false,capture:true});
+});
+</script>
 	</head>
 	<body>
 		<canvas id="canvas">
